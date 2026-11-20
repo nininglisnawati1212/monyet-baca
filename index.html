@@ -12,7 +12,7 @@
 
   <style>
     /* ============================================================
-       DESIGN TOKENS & RESET DASAR
+       1. DESIGN TOKENS & RESET DASAR
        ============================================================ */
     :root {
       --sky-top: #38bdf8;
@@ -55,7 +55,7 @@
     }
 
     /* ============================================================
-       HUD PANEL ATAS (TANPA TIMER)
+       2. HUD PANEL ATAS (TANPA TIMER)
        ============================================================ */
     .hud {
       position: relative;
@@ -134,7 +134,7 @@
     }
 
     /* ============================================================
-       AREA PERMAINAN & LATAR LANGIT TROPIS
+       3. AREA PERMAINAN & LATAR LANGIT TROPIS
        ============================================================ */
     .stage {
       position: relative;
@@ -211,7 +211,7 @@
     .corner-leaf.right { right: -8px; transform: scaleX(-1); }
 
     /* ============================================================
-       KARTU KATA (PAPAN KAYU SOAL + TRANSKRIP REAL-TIME)
+       4. KARTU KATA (PAPAN KAYU SOAL + TRANSKRIP REAL-TIME)
        ============================================================ */
     .word-panel {
       position: absolute;
@@ -272,7 +272,7 @@
       text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85);
     }
 
-    /* Warna berbeda untuk setiap suku kata agar mudah dibaca anak TK */
+    /* Warna berbeda per suku kata agar mudah dibaca anak TK */
     .syl-0 { color: #0284c7; }
     .syl-1 { color: #dc2626; }
     .syl-2 { color: #15803d; }
@@ -332,7 +332,7 @@
     }
 
     /* ============================================================
-       DUNIA HUTAN, KAMERA HORIZONTAL & ANIMASI SULUR
+       5. DUNIA HUTAN, KAMERA HORIZONTAL & ANIMASI SULUR
        ============================================================ */
     .world-viewport {
       position: absolute;
@@ -385,8 +385,8 @@
     }
 
     /* ============================================================
-       KARAKTER MONYET DENGAN ARTIKULASI TANGAN NYATA (BRACHIATION)
-       Poros genggaman tangan atas tepat berada di (70px, 16px)
+       6. KARAKTER MONYET ARTIKULASI NYATA (BRACHIATION)
+       Anchor point tepat di titik genggaman tangan atas (70px, 16px)
        ============================================================ */
     .monkey-wrapper {
       position: absolute;
@@ -407,7 +407,6 @@
       will-change: transform;
     }
 
-    /* Balon suara kecil di atas monyet saat berbunyi "Uu-aa-uu-aa!" */
     .monkey-bubble {
       position: absolute;
       top: -28px;
@@ -442,7 +441,7 @@
       50% { transform: rotate(5.5deg); }
     }
 
-    /* Idle: Tangan kanan tergantung bebas ke bawah siap mengayun ke tali berikutnya */
+    /* Idle: Tangan kanan tergantung bebas ke bawah (~118deg) siap mengayun */
     .monkey-wrapper.idle #armRightGroup {
       animation: freeArmIdle 2.8s ease-in-out infinite;
     }
@@ -474,7 +473,7 @@
       50% { transform: rotate(6deg); }
     }
 
-    /* Saat salah: monyet terpeleset turun sementara */
+    /* Saat salah: terpeleset turun sementara */
     .monkey-wrapper.slipping .monkey-body-pivot {
       animation: monkeySlipBody 0.85s ease;
     }
@@ -486,7 +485,7 @@
       100% { transform: translateY(0) rotate(0deg); }
     }
 
-    /* Saat menang: melompat gembira dan kedua tangan melambai */
+    /* Saat menang: selebrasi lompat & kedua tangan melambai ke atas */
     .monkey-wrapper.celebrate .monkey-body-pivot {
       animation: monkeyCelebrate 0.55s ease-in-out infinite alternate;
     }
@@ -515,7 +514,7 @@
     }
 
     /* ============================================================
-       TOAST PENYEMANGAT & PARTIKEL KONFETI
+       7. TOAST PENYEMANGAT & PARTIKEL KONFETI
        ============================================================ */
     .toast-banner {
       position: absolute;
@@ -575,7 +574,7 @@
     }
 
     /* ============================================================
-       BAR KONTROL BAWAH (AUTO-LISTEN + BANTUAN GURU)
+       8. BAR KONTROL BAWAH (AUTO-LISTEN + BANTUAN GURU)
        ============================================================ */
     .bottom-bar {
       position: relative;
@@ -699,7 +698,7 @@
     }
 
     /* ============================================================
-       LAYAR MULAI & LAYAR AKHIR (TANPA TIMER)
+       9. LAYAR MULAI & LAYAR AKHIR (TANPA TIMER)
        ============================================================ */
     .overlay {
       position: fixed;
@@ -748,7 +747,7 @@
       border: 2px solid #fde68a;
       border-radius: 20px;
       padding: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       text-align: left;
     }
 
@@ -800,6 +799,50 @@
       color: #166534;
     }
 
+    /* Baris Opsional Muat File MP3 Suara Monyet Sendiri */
+    .custom-sound-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .btn-upload-mp3 {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 2px dashed #f59e0b;
+      background: #fff;
+      color: #92400e;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.12s ease;
+    }
+
+    .btn-upload-mp3:hover {
+      background: #fef3c7;
+    }
+
+    .btn-upload-mp3:active {
+      transform: scale(0.97);
+    }
+
+    .mp3-status {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #15803d;
+      max-width: 240px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .guide-box {
       background: #ecfeff;
       border: 2px solid #67e8f9;
@@ -808,7 +851,7 @@
       font-size: 0.9rem;
       color: #155e75;
       font-weight: 600;
-      margin-bottom: 16px;
+      margin-bottom: 15px;
       line-height: 1.45;
     }
 
@@ -922,7 +965,7 @@
 
       <div class="hud-group">
         <div class="pill" id="scorePill">Skor: 0</div>
-        <button class="btn-icon" id="btnMute" title="Matikan / Nyalakan Suara" aria-label="Suara">🔊</button>
+        <button class="btn-icon" id="btnMute" type="button" title="Matikan / Nyalakan Suara" aria-label="Suara">🔊</button>
       </div>
     </header>
 
@@ -950,7 +993,7 @@
       <div class="word-panel">
         <div class="word-board" id="wordBoard">
           <div class="word-text" id="wordText" aria-live="polite">BU-KU</div>
-          <button class="btn-speak" id="btnSpeakWord" title="Dengar Contoh Pelafalan" aria-label="Dengar contoh kata">🔊</button>
+          <button class="btn-speak" id="btnSpeakWord" type="button" title="Dengar Contoh Pelafalan" aria-label="Dengar contoh kata">🔊</button>
         </div>
         <div class="transcript-chip" id="transcriptChip">🎤 Terdengar: ...</div>
       </div>
@@ -960,7 +1003,7 @@
         <div class="world-track" id="worldTrack">
           <svg class="world-svg" id="worldSvg"></svg>
 
-          <!-- Karakter Monyet SVG dengan Artikulasi Lengan, Kaki, dan Ekor -->
+          <!-- Karakter Monyet SVG Artikulasi Nyata -->
           <div class="monkey-wrapper idle" id="monkeyEl" role="button" tabindex="0" title="Sentuh Monyet!">
             <div class="monkey-bubble" id="monkeyBubble">Uu-aa-uu-aa! 🍌</div>
             <div class="monkey-body-pivot" id="monkeyPivot">
@@ -982,7 +1025,7 @@
                   <ellipse cx="104" cy="138" rx="8.5" ry="5" fill="#fde68a" stroke="#78350f" stroke-width="2.2"/>
                 </g>
 
-                <!-- Lengan Kiri (Memegang tali sulur pada 0deg) -->
+                <!-- Lengan Kiri (Pivot di bahu kiri 54,72; menggenggam tali tepat di 70,16 pada rotasi 0deg) -->
                 <g id="armLeftGroup" style="transform-origin: 54px 72px;">
                   <path d="M54,72 C42,50 50,24 68,16" fill="none" stroke="#78350f" stroke-width="12.5" stroke-linecap="round"/>
                   <path d="M54,72 C42,50 50,24 68,16" fill="none" stroke="#92400e" stroke-width="9" stroke-linecap="round"/>
@@ -1025,7 +1068,7 @@
                 <path id="monkeyMouthHappy" d="M60,73 Q70,83 80,73" fill="none" stroke="#451a03" stroke-width="3" stroke-linecap="round"/>
                 <circle id="monkeyMouthShock" cx="70" cy="75" r="5" fill="#7f1d1d" stroke="#451a03" stroke-width="2" style="display:none;"/>
 
-                <!-- Lengan Kanan (Bebas ke bawah pada idle ~118deg, naik menangkap tali saat berpindah) -->
+                <!-- Lengan Kanan (Pivot di bahu kanan 86,72; bebas ke bawah ~118deg saat idle, naik menangkap tali saat berayun) -->
                 <g id="armRightGroup" style="transform-origin: 86px 72px; transform: rotate(118deg);">
                   <path d="M86,72 C98,50 90,24 72,16" fill="none" stroke="#78350f" stroke-width="12.5" stroke-linecap="round"/>
                   <path d="M86,72 C98,50 90,24 72,16" fill="none" stroke="#a14d12" stroke-width="9" stroke-linecap="round"/>
@@ -1050,7 +1093,7 @@
         <div class="wave-bars" aria-hidden="true">
           <span></span><span></span><span></span><span></span>
         </div>
-        <span id="micLabel">Mendengarkan... Langsung Baca!</span>
+        <span id="micLabel">Langsung Ucapkan Kata!</span>
       </button>
 
       <div class="teacher-tools">
@@ -1061,7 +1104,7 @@
   </div>
 
   <!-- ============================================================
-       LAYAR MULAI (4 KATEGORI BANK SOAL)
+       LAYAR MULAI (4 KATEGORI + OPSI FILE MP3 SUARA MONYET)
        ============================================================ -->
   <div class="overlay" id="startOverlay">
     <div class="modal-card">
@@ -1091,8 +1134,17 @@
         </div>
       </div>
 
+      <!-- Tombol Opsional Uji File MP3 Suara Monyet Sendiri -->
+      <div class="custom-sound-row">
+        <label class="btn-upload-mp3" for="customMp3Input">
+          🎵 Pilih File MP3 Suara Monyet
+        </label>
+        <input type="file" id="customMp3Input" accept="audio/*" style="display:none;" />
+        <span class="mp3-status" id="mp3Status">Bawaan: Sintetis "Uu-aa-uu-aa!"</span>
+      </div>
+
       <div class="guide-box">
-        🎤 <strong>Mikrofon Otomatis Aktif!</strong> Anak <strong>tidak perlu menekan tombol</strong>—langsung ucapkan kata yang muncul di papan kayu. Klik <strong>Izinkan (Allow)</strong> saat browser meminta akses mikrofon.
+        🎤 <strong>Mikrofon Otomatis Aktif!</strong> Anak <strong>tidak perlu menekan tombol</strong>—langsung ucapkan kata yang muncul di papan kayu. Pilih <strong>Izinkan (Allow)</strong> saat browser meminta akses mikrofon.
       </div>
 
       <button type="button" class="btn-primary" id="btnStart">▶ MULAI BERMAIN</button>
@@ -1136,7 +1188,7 @@
       'use strict';
 
       /* ============================================================
-         1. BANK SOAL 96 KATA VARIATIF TK (4 KATEGORI)
+         1. BANK SOAL 96 KATA VARIATIF TK SESUAI KBBI
          ============================================================ */
       const WORD_BANK = {
         // 32 Kata Dasar TK
@@ -1226,12 +1278,17 @@
       const btnPlayAgain = document.getElementById("btnPlayAgain");
       const btnChangeCategory = document.getElementById("btnChangeCategory");
       const categoryGrid = document.getElementById("categoryGrid");
+      const customMp3Input = document.getElementById("customMp3Input");
+      const mp3Status = document.getElementById("mp3Status");
 
       /* ============================================================
-         4. SISTEM AUDIO SINTETIS (WEB AUDIO API MURNI)
-            Mencakup suara monyet "Uu-aa-uu-aa!", whoosh, chime, slip, menang
+         4. SISTEM AUDIO (WEB AUDIO API + OPSI FILE MP3 MONYET SENDIRI)
          ============================================================ */
       let audioCtx = null;
+      let customMonkeyBuffer = null;
+      let customMonkeySource = null;
+      let customMonkeyAudioEl = null;
+      let customMonkeyStopTimer = null;
 
       function ensureAudioCtx() {
         try {
@@ -1245,7 +1302,45 @@
         } catch (_) {}
       }
 
-      // Menampilkan balon teks lucu saat monyet bersuara
+      function stopCustomMonkeySound() {
+        clearTimeout(customMonkeyStopTimer);
+        if (customMonkeySource) {
+          try { customMonkeySource.stop(); } catch (_) {}
+          try { customMonkeySource.disconnect(); } catch (_) {}
+          customMonkeySource = null;
+        }
+        if (customMonkeyAudioEl) {
+          try {
+            customMonkeyAudioEl.pause();
+            customMonkeyAudioEl.currentTime = 0;
+          } catch (_) {}
+        }
+      }
+
+      // Memuat file MP3/audio pilihan pengguna ke AudioBuffer agar lancar di mobile/desktop
+      async function loadCustomMonkeyFile(file) {
+        if (!file) return;
+        ensureAudioCtx();
+        stopCustomMonkeySound();
+
+        try {
+          const objectUrl = URL.createObjectURL(file);
+          customMonkeyAudioEl = new Audio(objectUrl);
+          customMonkeyAudioEl.preload = "auto";
+
+          if (audioCtx) {
+            const arrayBuf = await file.arrayBuffer();
+            customMonkeyBuffer = await audioCtx.decodeAudioData(arrayBuf.slice(0));
+          }
+          mp3Status.textContent = `✅ Aktif: ${file.name}`;
+          playMonkeySound(2200);
+        } catch (_) {
+          // Jika decodeAudioData gagal, tetap gunakan fallback HTMLAudioElement
+          mp3Status.textContent = `✅ Aktif: ${file.name}`;
+          playMonkeySound(2200);
+        }
+      }
+
       function showMonkeyBubble(text = "Uu-aa-uu-aa! 🍌", duration = 950) {
         clearTimeout(bubbleTimer);
         monkeyBubble.textContent = text;
@@ -1256,14 +1351,51 @@
       }
 
       /**
-       * Sintesis suara monyet ceria "uu-aa-uu-aa!" berbasis Web Audio API
-       * menggunakan 2 filter formant bandpass (vokal 'uu' -> 'aa').
+       * Memutar suara monyet:
+       * - Jika pengguna memilih file MP3 sendiri, putar MP3 tersebut via Web Audio Buffer.
+       * - Jika tidak, putar sintesis vokal formant "Uu-aa-uu-aa!" berbasis Web Audio API murni.
        */
-      function playMonkeySound() {
+      function playMonkeySound(maxDurationMs = 2200) {
         if (isMuted) return;
         ensureAudioCtx();
-        if (!audioCtx) return;
 
+        // 1. Jika ada file MP3 pilihan pengguna
+        if (audioCtx && customMonkeyBuffer) {
+          try {
+            stopCustomMonkeySound();
+            const src = audioCtx.createBufferSource();
+            const gain = audioCtx.createGain();
+            src.buffer = customMonkeyBuffer;
+            gain.gain.setValueAtTime(1.0, audioCtx.currentTime);
+            src.connect(gain);
+            gain.connect(audioCtx.destination);
+            customMonkeySource = src;
+            src.start(0);
+
+            if (maxDurationMs > 0) {
+              const fadeAt = audioCtx.currentTime + Math.max(0.2, (maxDurationMs - 150) / 1000);
+              gain.gain.setValueAtTime(1.0, fadeAt);
+              gain.gain.linearRampToValueAtTime(0.001, fadeAt + 0.15);
+              src.stop(fadeAt + 0.16);
+            }
+            return;
+          } catch (_) {}
+        } else if (customMonkeyAudioEl) {
+          try {
+            stopCustomMonkeySound();
+            customMonkeyAudioEl.currentTime = 0;
+            customMonkeyAudioEl.volume = 1.0;
+            const p = customMonkeyAudioEl.play();
+            if (p && p.catch) p.catch(() => {});
+            if (maxDurationMs > 0) {
+              customMonkeyStopTimer = setTimeout(stopCustomMonkeySound, maxDurationMs);
+            }
+            return;
+          } catch (_) {}
+        }
+
+        // 2. Suara bawaan: Sintesis Formant "Uu-aa-uu-aa!" (Web Audio API)
+        if (!audioCtx) return;
         const now = audioCtx.currentTime;
         const syllables = [
           { t: 0.00, dur: 0.12, f0: 310, fPeak: 470, f1: 400, fm1Start: 360, fm1End: 480, fm2: 950,  gain: 0.24 }, // uu
@@ -1486,7 +1618,7 @@
 
         let svg = "";
 
-        // Bukit belakang hijau cerah
+        // Bukit belakang hijau lembut
         svg += `<path d="M0,${groundY} `;
         for (let x = 0; x <= totalWidth; x += 260) {
           svg += `Q${x + 130},${groundY - 95} ${x + 260},${groundY} `;
@@ -1610,11 +1742,11 @@
       }
 
       /**
-       * Animasi 4 fase menggunakan requestAnimationFrame:
-       * (1) Ancang-ancang: tubuh & tangan kanan mengayun ke belakang, tangan kiri pegang tali.
-       * (2) Meluncur & Meraih: tubuh meluncur parabola, tangan kiri lepas & terayun ke belakang, tangan kanan meraih tinggi ke depan.
-       * (3) Menangkap Tali: tangan kanan menangkap tali baru disertai ayunan elastis (catch-vine) & follow-through.
-       * (4) Ganti Pegangan: tangan kiri naik menggenggam tali, tangan kanan turun bebas ke bawah.
+       * Animasi 4 fase menggunakan requestAnimationFrame (~880ms):
+       * Fase 1 (0.00 - 0.22): Ancang-ancang ayunan ke belakang (tangan kiri tetap pegang tali).
+       * Fase 2 (0.22 - 0.58): Meluncur melengkung ke tali berikutnya (tangan kiri lepas ke belakang, kanan meraih tinggi ke depan).
+       * Fase 3 (0.58 - 0.78): Tangan kanan menangkap tali baru (tali ikut berayun elastis).
+       * Fase 4 (0.78 - 1.00): Ganti pegangan (tangan kiri naik memegang tali, kanan turun bebas ke bawah).
        */
       function animateMonkeySwing(fromIdx, toIdx, onComplete) {
         if (swingRafId) cancelAnimationFrame(swingRafId);
@@ -1652,7 +1784,7 @@
           let tailAngle = 0;
 
           if (rawT < 0.22) {
-            // Fase 1: Ancang-ancang
+            // Fase 1: Ancang-ancang ayunan ke belakang
             const p = easeInOut(rawT / 0.22);
             curX = startX - Math.sin(p * Math.PI * 0.5) * 8;
             curY = baseY + p * 6;
@@ -1662,7 +1794,7 @@
             legAngle = lerp(0, 22, p);
             tailAngle = lerp(0, -18, p);
           } else if (rawT < 0.58) {
-            // Fase 2: Meluncur & Meraih
+            // Fase 2: Meluncur melengkung & tangan kanan meraih tali berikutnya
             const p = (rawT - 0.22) / 0.36;
             const ep = easeInOut(p);
             curX = lerp(startX - 8, endX, ep);
@@ -1674,7 +1806,7 @@
             legAngle = lerp(22, -26, ep);
             tailAngle = lerp(-18, 28, ep);
           } else if (rawT < 0.78) {
-            // Fase 3: Menangkap Tali Baru + Follow-through
+            // Fase 3: Tangan kanan menangkap tali baru + follow-through
             if (!caughtTriggered) {
               caughtTriggered = true;
               if (toVineEl) {
@@ -1693,7 +1825,7 @@
             legAngle = lerp(-26, 12, p);
             tailAngle = lerp(28, -12, p);
           } else {
-            // Fase 4: Ganti Pegangan (tangan kiri naik pegang tali, kanan turun bebas)
+            // Fase 4: Ganti pegangan (tangan kiri naik pegang tali, kanan turun bebas)
             const p = easeInOut((rawT - 0.78) / 0.22);
             curX = endX;
             curY = baseY;
@@ -1758,7 +1890,7 @@
       }
 
       /* ============================================================
-         7. LOGIKA KATA, SUKU KATA & PENCOCOKAN SUARA RAMAH ANAK TK
+         7. LOGIKA KATA, SUKU KATA & PENCOCOKAN SUARA (LEVENSHTEIN)
          ============================================================ */
       function shuffle(arr) {
         const copy = [...arr];
@@ -1829,6 +1961,7 @@
         const spokenTokens = cleaned.split(" ");
         for (const token of spokenTokens) {
           if (token === target) return true;
+          // Toleransi ringan 1 huruf untuk kata panjang >= 5 huruf
           if (target.length >= 5 && levenshtein(token, target) <= 1) return true;
         }
         return false;
@@ -1842,7 +1975,7 @@
         if (state === "listening") {
           micStatusBtn.classList.add("listening");
           micIcon.textContent = "🎤";
-          micLabel.textContent = text || "Mendengarkan... Langsung Baca!";
+          micLabel.textContent = text || "Langsung Ucapkan Kata!";
         } else if (state === "paused") {
           micStatusBtn.classList.add("paused");
           micIcon.textContent = "⏳";
@@ -2026,7 +2159,7 @@
         playWhoosh();
         playCorrectChime();
         setTimeout(() => {
-          playMonkeySound();
+          playMonkeySound(2000);
           showMonkeyBubble("Uu-aa-uu-aa! 🍌", 850);
         }, 120);
         spawnConfetti();
@@ -2070,7 +2203,7 @@
           currentVine.classList.add("shake-vine");
         }
 
-        // Kedua tangan panik memegang tali saat terpeleset
+        // Kedua tangan reflek memegang tali sambil tergelincir turun dengan mulut kaget
         monkeyEl.classList.remove("idle", "slipping");
         armLeftGroup.style.transform = "rotate(0deg)";
         armRightGroup.style.transform = "rotate(12deg)";
@@ -2115,7 +2248,7 @@
             showMonkeyBubble("Yeeey! Uu-aa! 🍌🏆", 1600);
           });
           playVictoryMelody();
-          setTimeout(() => playMonkeySound(), 400);
+          setTimeout(() => playMonkeySound(3000), 350);
           spawnConfetti();
           setTimeout(spawnConfetti, 450);
 
@@ -2144,7 +2277,7 @@
 
       function startNewGame() {
         ensureAudioCtx();
-        playMonkeySound();
+        playMonkeySound(1800);
 
         sessionWords = pickSessionWords();
         currentIndex = 0;
@@ -2169,7 +2302,7 @@
         showMonkeyBubble("Ayo baca! Uu-aa!", 1100);
 
         if (!recognition) initSpeechRecognition();
-        scheduleAutoListen(950);
+        scheduleAutoListen(1100);
       }
 
       /* ============================================================
@@ -2183,6 +2316,11 @@
         selectedCategory = btn.dataset.cat;
       });
 
+      customMp3Input.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) loadCustomMonkeyFile(file);
+      });
+
       btnStart.addEventListener("click", startNewGame);
       btnPlayAgain.addEventListener("click", startNewGame);
 
@@ -2194,6 +2332,7 @@
       btnMute.addEventListener("click", () => {
         isMuted = !isMuted;
         btnMute.textContent = isMuted ? "🔇" : "🔊";
+        if (isMuted) stopCustomMonkeySound();
       });
 
       btnSpeakWord.addEventListener("click", speakCurrentWord);
@@ -2211,16 +2350,16 @@
         startListeningNow();
       });
 
-      // Sentuh karakter monyet untuk mendengar suara "Uu-aa-uu-aa!"
+      // Sentuh karakter monyet untuk mendengar suaranya kapan saja
       monkeyEl.addEventListener("click", () => {
-        playMonkeySound();
+        playMonkeySound(2500);
         showMonkeyBubble("Uu-aa-uu-aa! 🐵", 900);
       });
 
       monkeyEl.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          playMonkeySound();
+          playMonkeySound(2500);
           showMonkeyBubble("Uu-aa-uu-aa! 🐵", 900);
         }
       });
@@ -2229,7 +2368,7 @@
         buildWorldSVG();
       });
 
-      // Render awal latar hutan di belakang layar mulai
+      // Render latar hutan awal di belakang layar mulai
       buildWorldSVG();
     })();
   </script>
