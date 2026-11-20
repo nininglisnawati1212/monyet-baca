@@ -1,0 +1,2237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Petualangan Monyet: Belajar Membaca Kata</title>
+
+  <!-- Google Fonts: Fredoka & Nunito untuk tipografi bulat yang ramah anak TK -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS & RESET DASAR
+       ============================================================ */
+    :root {
+      --sky-top: #38bdf8;
+      --sky-bottom: #bae6fd;
+      --forest-dark: #14532d;
+      --forest-mid: #166534;
+      --forest-light: #22c55e;
+      --wood-dark: #78350f;
+      --wood-mid: #92400e;
+      --wood-light: #fef3c7;
+      --banana: #facc15;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 65%, #4ade80 65%, #16a34a 100%);
+      color: #1e293b;
+    }
+
+    .app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       HUD PANEL ATAS (TANPA TIMER)
+       ============================================================ */
+    .hud {
+      position: relative;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 16px;
+      background: linear-gradient(180deg, #14532d 0%, #166534 100%);
+      border-bottom: 4px solid #052e16;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .hud-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
+    }
+
+    .lives {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+    }
+
+    .life-icon {
+      font-size: 1.35rem;
+      transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+      display: inline-block;
+    }
+
+    .life-icon.lost {
+      opacity: 0.25;
+      filter: grayscale(1);
+      transform: scale(0.8);
+    }
+
+    .btn-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid #fef08a;
+      background: linear-gradient(180deg, #facc15 0%, #eab308 100%);
+      color: #422006;
+      font-size: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #a16207;
+      transition: transform 0.12s ease;
+    }
+
+    .btn-icon:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #a16207;
+    }
+
+    /* ============================================================
+       AREA PERMAINAN & LATAR LANGIT TROPIS
+       ============================================================ */
+    .stage {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .sky-layer {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #29b6f6 0%, #81d4fa 52%, #b3e5fc 72%);
+      z-index: 1;
+    }
+
+    .sun {
+      position: absolute;
+      top: 14px;
+      right: 7%;
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fef08a 30%, #facc15 70%, #f59e0b 100%);
+      box-shadow: 0 0 35px rgba(250, 204, 21, 0.85);
+      animation: sunPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes sunPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.07); }
+    }
+
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 999px;
+      box-shadow: 0 6px 12px rgba(2, 132, 199, 0.12);
+      animation: drift linear infinite;
+    }
+
+    .cloud::before, .cloud::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 50%;
+    }
+
+    .cloud-1 { width: 110px; height: 36px; top: 14%; left: -120px; animation-duration: 38s; }
+    .cloud-1::before { width: 48px; height: 48px; top: -22px; left: 16px; }
+    .cloud-1::after { width: 38px; height: 38px; top: -16px; right: 18px; }
+
+    .cloud-2 { width: 140px; height: 44px; top: 26%; left: -160px; animation-duration: 52s; animation-delay: -18s; opacity: 0.85; }
+    .cloud-2::before { width: 60px; height: 60px; top: -28px; left: 24px; }
+    .cloud-2::after { width: 46px; height: 46px; top: -20px; right: 24px; }
+
+    .cloud-3 { width: 90px; height: 30px; top: 8%; left: -100px; animation-duration: 44s; animation-delay: -30s; opacity: 0.78; }
+    .cloud-3::before { width: 40px; height: 40px; top: -18px; left: 14px; }
+    .cloud-3::after { width: 32px; height: 32px; top: -14px; right: 14px; }
+
+    @keyframes drift {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(100vw + 280px)); }
+    }
+
+    .corner-leaf {
+      position: absolute;
+      top: -6px;
+      z-index: 6;
+      pointer-events: none;
+      width: 110px;
+      height: 80px;
+    }
+    .corner-leaf.left { left: -8px; }
+    .corner-leaf.right { right: -8px; transform: scaleX(-1); }
+
+    /* ============================================================
+       KARTU KATA (PAPAN KAYU SOAL + TRANSKRIP REAL-TIME)
+       ============================================================ */
+    .word-panel {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: min(92vw, 560px);
+      pointer-events: auto;
+    }
+
+    .word-board {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 12px 26px;
+      min-width: min(84vw, 340px);
+      background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+      border: 6px solid #92400e;
+      border-radius: 26px;
+      box-shadow: 0 8px 0 #78350f, 0 14px 24px rgba(0, 0, 0, 0.22);
+      transition: transform 0.25s ease;
+    }
+
+    .word-board.pop {
+      animation: boardPop 0.4s ease;
+    }
+
+    .word-board.shake {
+      animation: boardShake 0.45s ease;
+    }
+
+    @keyframes boardPop {
+      0% { transform: scale(0.86); }
+      60% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes boardShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-7px); }
+      80% { transform: translateX(7px); }
+    }
+
+    .word-text {
+      font-size: clamp(2rem, 5.2vw, 3.3rem);
+      font-weight: 700;
+      letter-spacing: 2px;
+      line-height: 1.1;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85);
+    }
+
+    /* Warna berbeda untuk setiap suku kata agar mudah dibaca anak TK */
+    .syl-0 { color: #0284c7; }
+    .syl-1 { color: #dc2626; }
+    .syl-2 { color: #15803d; }
+    .syl-3 { color: #9333ea; }
+    .syl-dash { color: #a8a29e; margin: 0 2px; font-weight: 600; }
+
+    .btn-speak {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid #bae6fd;
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      color: #fff;
+      font-size: 1.35rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #0369a1;
+      flex-shrink: 0;
+      transition: transform 0.12s ease;
+    }
+
+    .btn-speak:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #0369a1;
+    }
+
+    .transcript-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 2px solid #cbd5e1;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #334155;
+      max-width: 90vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .transcript-chip.heard-correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+      color: #166534;
+    }
+
+    .transcript-chip.heard-wrong {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #991b1b;
+    }
+
+    /* ============================================================
+       DUNIA HUTAN, KAMERA HORIZONTAL & ANIMASI SULUR
+       ============================================================ */
+    .world-viewport {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      overflow: hidden;
+    }
+
+    .world-track {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      will-change: transform;
+      transition: transform 0.92s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .world-svg {
+      display: block;
+      height: 100%;
+    }
+
+    .vine-group {
+      transform-box: fill-box;
+      transform-origin: top center;
+    }
+
+    .vine-group.shake-vine {
+      animation: vineShake 0.48s ease;
+    }
+
+    .vine-group.catch-vine {
+      animation: vineCatch 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes vineShake {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(7deg); }
+      40% { transform: rotate(-7deg); }
+      60% { transform: rotate(5deg); }
+      80% { transform: rotate(-4deg); }
+    }
+
+    @keyframes vineCatch {
+      0% { transform: rotate(0deg); }
+      28% { transform: rotate(-7.5deg); }
+      60% { transform: rotate(4deg); }
+      82% { transform: rotate(-1.8deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    /* ============================================================
+       KARAKTER MONYET DENGAN ARTIKULASI TANGAN NYATA (BRACHIATION)
+       Poros genggaman tangan atas tepat berada di (70px, 16px)
+       ============================================================ */
+    .monkey-wrapper {
+      position: absolute;
+      width: 140px;
+      height: 155px;
+      margin-left: -70px;
+      margin-top: -16px;
+      z-index: 12;
+      cursor: pointer;
+      will-change: left, top, transform;
+      transform-origin: 70px 16px;
+    }
+
+    .monkey-body-pivot {
+      width: 100%;
+      height: 100%;
+      transform-origin: 70px 16px;
+      will-change: transform;
+    }
+
+    /* Balon suara kecil di atas monyet saat berbunyi "Uu-aa-uu-aa!" */
+    .monkey-bubble {
+      position: absolute;
+      top: -28px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.75);
+      background: #fef08a;
+      color: #78350f;
+      border: 3px solid #f59e0b;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .monkey-bubble.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-6px) scale(1);
+    }
+
+    /* Idle: Berayun lembut dari poros genggaman 1 tangan kiri */
+    .monkey-wrapper.idle .monkey-body-pivot {
+      animation: monkeyPendulum 2.8s ease-in-out infinite;
+    }
+
+    @keyframes monkeyPendulum {
+      0%, 100% { transform: rotate(-5.5deg); }
+      50% { transform: rotate(5.5deg); }
+    }
+
+    /* Idle: Tangan kanan tergantung bebas ke bawah siap mengayun ke tali berikutnya */
+    .monkey-wrapper.idle #armRightGroup {
+      animation: freeArmIdle 2.8s ease-in-out infinite;
+    }
+
+    @keyframes freeArmIdle {
+      0%, 100% { transform: rotate(126deg); }
+      50% { transform: rotate(106deg); }
+    }
+
+    .monkey-wrapper.idle #tailGroup {
+      animation: tailWag 2.8s ease-in-out infinite;
+    }
+
+    @keyframes tailWag {
+      0%, 100% { transform: rotate(-8deg); }
+      50% { transform: rotate(10deg); }
+    }
+
+    .monkey-wrapper.idle #legLeftGroup {
+      animation: legIdle 2.8s ease-in-out infinite;
+    }
+
+    .monkey-wrapper.idle #legRightGroup {
+      animation: legIdle 2.8s ease-in-out infinite reverse;
+    }
+
+    @keyframes legIdle {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(6deg); }
+    }
+
+    /* Saat salah: monyet terpeleset turun sementara */
+    .monkey-wrapper.slipping .monkey-body-pivot {
+      animation: monkeySlipBody 0.85s ease;
+    }
+
+    @keyframes monkeySlipBody {
+      0% { transform: translateY(0) rotate(0deg); }
+      32% { transform: translateY(36px) rotate(-12deg); }
+      62% { transform: translateY(24px) rotate(8deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+
+    /* Saat menang: melompat gembira dan kedua tangan melambai */
+    .monkey-wrapper.celebrate .monkey-body-pivot {
+      animation: monkeyCelebrate 0.55s ease-in-out infinite alternate;
+    }
+
+    @keyframes monkeyCelebrate {
+      from { transform: translateY(0) rotate(-5deg) scale(1.03); }
+      to { transform: translateY(-16px) rotate(5deg) scale(1.08); }
+    }
+
+    .monkey-wrapper.celebrate #armLeftGroup {
+      animation: cheerLeft 0.45s ease-in-out infinite alternate;
+    }
+
+    .monkey-wrapper.celebrate #armRightGroup {
+      animation: cheerRight 0.45s ease-in-out infinite alternate;
+    }
+
+    @keyframes cheerLeft {
+      from { transform: rotate(-18deg); }
+      to { transform: rotate(-42deg); }
+    }
+
+    @keyframes cheerRight {
+      from { transform: rotate(18deg); }
+      to { transform: rotate(42deg); }
+    }
+
+    /* ============================================================
+       TOAST PENYEMANGAT & PARTIKEL KONFETI
+       ============================================================ */
+    .toast-banner {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      z-index: 26;
+      max-width: min(92vw, 560px);
+      padding: 10px 20px;
+      border-radius: 18px;
+      background: #fffbeb;
+      border: 3px solid #f59e0b;
+      color: #78350f;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .toast-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-banner.success {
+      background: #dcfce7;
+      border-color: #22c55e;
+      color: #14532d;
+    }
+
+    .toast-banner.error {
+      background: #fef2f2;
+      border-color: #ef4444;
+      color: #991b1b;
+    }
+
+    .confetti-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 28;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      font-size: 1.5rem;
+      animation: burst 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes burst {
+      0% { transform: translate(0, 0) scale(0.4) rotate(0deg); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(1.15) rotate(var(--rot)); opacity: 0; }
+    }
+
+    /* ============================================================
+       BAR KONTROL BAWAH (AUTO-LISTEN + BANTUAN GURU)
+       ============================================================ */
+    .bottom-bar {
+      position: relative;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 16px;
+      background: linear-gradient(180deg, #166534 0%, #14532d 100%);
+      border-top: 4px solid #052e16;
+      box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.24);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .mic-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 22px;
+      border-radius: 999px;
+      border: 3px solid #86efac;
+      background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+      color: #fff;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #14532d, 0 0 0 0 rgba(74, 222, 128, 0.6);
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+
+    .mic-status-pill.listening {
+      animation: micPulse 1.5s infinite;
+    }
+
+    .mic-status-pill.paused {
+      border-color: #fde047;
+      background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+      box-shadow: 0 4px 0 #92400e;
+      animation: none;
+    }
+
+    .mic-status-pill.blocked {
+      border-color: #fca5a5;
+      background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+      box-shadow: 0 4px 0 #991b1b;
+      animation: none;
+    }
+
+    @keyframes micPulse {
+      0% { box-shadow: 0 4px 0 #14532d, 0 0 0 0 rgba(134, 239, 172, 0.75); }
+      70% { box-shadow: 0 4px 0 #14532d, 0 0 0 14px rgba(134, 239, 172, 0); }
+      100% { box-shadow: 0 4px 0 #14532d, 0 0 0 0 rgba(134, 239, 172, 0); }
+    }
+
+    .wave-bars {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      height: 20px;
+    }
+
+    .wave-bars span {
+      display: inline-block;
+      width: 4px;
+      height: 8px;
+      border-radius: 4px;
+      background: #fff;
+      animation: waveBounce 0.75s ease-in-out infinite;
+    }
+
+    .wave-bars span:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bars span:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bars span:nth-child(4) { animation-delay: 0.45s; }
+
+    .mic-status-pill:not(.listening) .wave-bars span {
+      animation: none;
+      height: 6px;
+      opacity: 0.65;
+    }
+
+    @keyframes waveBounce {
+      0%, 100% { height: 6px; }
+      50% { height: 20px; }
+    }
+
+    .teacher-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-helper {
+      padding: 9px 15px;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.12s ease;
+    }
+
+    .btn-helper:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-helper:active {
+      transform: scale(0.96);
+    }
+
+    .btn-helper.manual {
+      background: linear-gradient(180deg, #84cc16 0%, #65a30d 100%);
+      border-color: #d9f99d;
+      color: #1a2e05;
+    }
+
+    /* ============================================================
+       LAYAR MULAI & LAYAR AKHIR (TANPA TIMER)
+       ============================================================ */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(5, 46, 22, 0.72);
+      backdrop-filter: blur(5px);
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .modal-card {
+      width: min(94vw, 560px);
+      max-height: 92dvh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+      border: 6px solid #92400e;
+      border-radius: 30px;
+      padding: 22px 22px 20px;
+      text-align: center;
+      box-shadow: 0 12px 0 #78350f, 0 22px 44px rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-title {
+      font-size: clamp(1.55rem, 4.4vw, 2.15rem);
+      color: #14532d;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .modal-sub {
+      font-size: 1rem;
+      color: #78350f;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .category-box {
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px solid #fde68a;
+      border-radius: 20px;
+      padding: 12px;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .category-label {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #78350f;
+      margin-bottom: 8px;
+      display: block;
+      text-align: center;
+    }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .cat-btn {
+      padding: 10px 8px;
+      border-radius: 14px;
+      border: 3px solid #e2e8f0;
+      background: #fff;
+      color: #334155;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .cat-btn small {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .cat-btn.active {
+      border-color: #16a34a;
+      background: #dcfce7;
+      color: #14532d;
+      box-shadow: 0 3px 0 #15803d;
+    }
+
+    .cat-btn.active small {
+      color: #166534;
+    }
+
+    .guide-box {
+      background: #ecfeff;
+      border: 2px solid #67e8f9;
+      border-radius: 16px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      color: #155e75;
+      font-weight: 600;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 30px;
+      border-radius: 999px;
+      border: 3px solid #fef08a;
+      background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+      color: #fff;
+      font-family: inherit;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #14532d;
+      transition: transform 0.12s ease;
+    }
+
+    .btn-primary:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #14532d;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: 3px solid #f59e0b;
+      background: #fff;
+      color: #78350f;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #d97706;
+      transition: transform 0.12s ease;
+    }
+
+    .btn-secondary:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #d97706;
+    }
+
+    .end-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stars-row {
+      font-size: 2.8rem;
+      letter-spacing: 6px;
+      margin: 8px 0 14px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .stat-box {
+      background: #fff;
+      border: 2px solid #fde68a;
+      border-radius: 16px;
+      padding: 10px 8px;
+    }
+
+    .stat-val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #15803d;
+    }
+
+    .stat-lbl {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #78350f;
+    }
+
+    @media (max-width: 640px) {
+      .hud { padding: 8px 10px; }
+      .pill { font-size: 0.88rem; padding: 5px 10px; }
+      .bottom-bar { justify-content: center; padding: 8px 10px; }
+      .mic-status-pill { font-size: 0.92rem; padding: 8px 16px; }
+      .cat-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- HUD PANEL ATAS (TANPA TIMER) -->
+    <header class="hud">
+      <div class="hud-group">
+        <div class="pill lives" id="livesBox" aria-label="Nyawa">
+          <span class="life-icon">🍌</span>
+          <span class="life-icon">🍌</span>
+          <span class="life-icon">🍌</span>
+        </div>
+        <div class="pill" id="progressPill">Kata 1/10</div>
+      </div>
+
+      <div class="hud-group">
+        <div class="pill" id="scorePill">Skor: 0</div>
+        <button class="btn-icon" id="btnMute" title="Matikan / Nyalakan Suara" aria-label="Suara">🔊</button>
+      </div>
+    </header>
+
+    <!-- AREA PERMAINAN HUTAN TROPIS -->
+    <main class="stage" id="stage">
+      <!-- Latar Langit, Matahari & Awan -->
+      <div class="sky-layer">
+        <div class="sun"></div>
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+      </div>
+
+      <!-- Daun Sudut Dekoratif -->
+      <svg class="corner-leaf left" viewBox="0 0 120 90" aria-hidden="true">
+        <path d="M0,0 C40,0 85,18 112,55 C72,58 34,42 0,24 Z" fill="#15803d"/>
+        <path d="M0,0 C32,20 62,48 74,82 C38,70 15,44 0,18 Z" fill="#16a34a"/>
+      </svg>
+      <svg class="corner-leaf right" viewBox="0 0 120 90" aria-hidden="true">
+        <path d="M0,0 C40,0 85,18 112,55 C72,58 34,42 0,24 Z" fill="#15803d"/>
+        <path d="M0,0 C32,20 62,48 74,82 C38,70 15,44 0,18 Z" fill="#16a34a"/>
+      </svg>
+
+      <!-- Kartu Kata di Tengah Atas -->
+      <div class="word-panel">
+        <div class="word-board" id="wordBoard">
+          <div class="word-text" id="wordText" aria-live="polite">BU-KU</div>
+          <button class="btn-speak" id="btnSpeakWord" title="Dengar Contoh Pelafalan" aria-label="Dengar contoh kata">🔊</button>
+        </div>
+        <div class="transcript-chip" id="transcriptChip">🎤 Terdengar: ...</div>
+      </div>
+
+      <!-- Dunia Hutan Bergerak Horizontal -->
+      <div class="world-viewport" id="worldViewport">
+        <div class="world-track" id="worldTrack">
+          <svg class="world-svg" id="worldSvg"></svg>
+
+          <!-- Karakter Monyet SVG dengan Artikulasi Lengan, Kaki, dan Ekor -->
+          <div class="monkey-wrapper idle" id="monkeyEl" role="button" tabindex="0" title="Sentuh Monyet!">
+            <div class="monkey-bubble" id="monkeyBubble">Uu-aa-uu-aa! 🍌</div>
+            <div class="monkey-body-pivot" id="monkeyPivot">
+              <svg viewBox="0 0 140 155" width="140" height="155" style="overflow: visible;">
+                <!-- Ekor melingkar -->
+                <g id="tailGroup" style="transform-origin: 86px 102px;">
+                  <path d="M86,102 C114,98 122,74 109,62 C98,53 90,64 97,73" fill="none" stroke="#7c2d12" stroke-width="7.5" stroke-linecap="round"/>
+                </g>
+
+                <!-- Kaki Kiri -->
+                <g id="legLeftGroup" style="transform-origin: 57px 112px;">
+                  <path d="M57,112 C49,126 42,134 38,136" fill="none" stroke="#92400e" stroke-width="10.5" stroke-linecap="round"/>
+                  <ellipse cx="36" cy="138" rx="8.5" ry="5" fill="#fde68a" stroke="#78350f" stroke-width="2.2"/>
+                </g>
+
+                <!-- Kaki Kanan -->
+                <g id="legRightGroup" style="transform-origin: 83px 112px;">
+                  <path d="M83,112 C91,126 98,134 102,136" fill="none" stroke="#92400e" stroke-width="10.5" stroke-linecap="round"/>
+                  <ellipse cx="104" cy="138" rx="8.5" ry="5" fill="#fde68a" stroke="#78350f" stroke-width="2.2"/>
+                </g>
+
+                <!-- Lengan Kiri (Memegang tali sulur pada 0deg) -->
+                <g id="armLeftGroup" style="transform-origin: 54px 72px;">
+                  <path d="M54,72 C42,50 50,24 68,16" fill="none" stroke="#78350f" stroke-width="12.5" stroke-linecap="round"/>
+                  <path d="M54,72 C42,50 50,24 68,16" fill="none" stroke="#92400e" stroke-width="9" stroke-linecap="round"/>
+                  <circle cx="70" cy="16" r="8" fill="#fde68a" stroke="#78350f" stroke-width="2.5"/>
+                  <path d="M66,13 Q70,11 74,14" fill="none" stroke="#78350f" stroke-width="2" stroke-linecap="round"/>
+                </g>
+
+                <!-- Badan & Perut -->
+                <ellipse cx="70" cy="95" rx="23" ry="25" fill="#92400e" stroke="#451a03" stroke-width="3"/>
+                <ellipse cx="70" cy="97" rx="14" ry="16" fill="#fde68a"/>
+
+                <!-- Telinga -->
+                <circle cx="41" cy="59" r="11" fill="#92400e" stroke="#451a03" stroke-width="3"/>
+                <circle cx="41" cy="59" r="6" fill="#fca5a5"/>
+                <circle cx="99" cy="59" r="11" fill="#92400e" stroke="#451a03" stroke-width="3"/>
+                <circle cx="99" cy="59" r="6" fill="#fca5a5"/>
+
+                <!-- Kepala & Jambul -->
+                <circle cx="70" cy="61" r="26" fill="#92400e" stroke="#451a03" stroke-width="3"/>
+                <path d="M65,35 C68,25 76,25 74,36" fill="none" stroke="#451a03" stroke-width="4" stroke-linecap="round"/>
+
+                <!-- Wajah -->
+                <circle cx="61" cy="59" r="12" fill="#fef3c7"/>
+                <circle cx="79" cy="59" r="12" fill="#fef3c7"/>
+                <ellipse cx="70" cy="71" rx="19" ry="14" fill="#fef3c7"/>
+
+                <!-- Mata melirik ke arah tali tujuan -->
+                <circle cx="62" cy="58" r="4.5" fill="#1e293b"/>
+                <circle cx="80" cy="58" r="4.5" fill="#1e293b"/>
+                <circle cx="63.5" cy="56.5" r="1.6" fill="#fff"/>
+                <circle cx="81.5" cy="56.5" r="1.6" fill="#fff"/>
+
+                <!-- Pipi & Hidung -->
+                <ellipse cx="52" cy="68" rx="4.5" ry="2.8" fill="#fda4af" opacity="0.75"/>
+                <ellipse cx="88" cy="68" rx="4.5" ry="2.8" fill="#fda4af" opacity="0.75"/>
+                <circle cx="67" cy="66" r="1.5" fill="#451a03"/>
+                <circle cx="73" cy="66" r="1.5" fill="#451a03"/>
+
+                <!-- Mulut Senang vs Kaget -->
+                <path id="monkeyMouthHappy" d="M60,73 Q70,83 80,73" fill="none" stroke="#451a03" stroke-width="3" stroke-linecap="round"/>
+                <circle id="monkeyMouthShock" cx="70" cy="75" r="5" fill="#7f1d1d" stroke="#451a03" stroke-width="2" style="display:none;"/>
+
+                <!-- Lengan Kanan (Bebas ke bawah pada idle ~118deg, naik menangkap tali saat berpindah) -->
+                <g id="armRightGroup" style="transform-origin: 86px 72px; transform: rotate(118deg);">
+                  <path d="M86,72 C98,50 90,24 72,16" fill="none" stroke="#78350f" stroke-width="12.5" stroke-linecap="round"/>
+                  <path d="M86,72 C98,50 90,24 72,16" fill="none" stroke="#a14d12" stroke-width="9" stroke-linecap="round"/>
+                  <circle cx="70" cy="16" r="8" fill="#fde68a" stroke="#78350f" stroke-width="2.5"/>
+                  <path d="M66,14 Q70,11 74,13" fill="none" stroke="#78350f" stroke-width="2" stroke-linecap="round"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pesan Penyemangat & Lapisan Konfeti -->
+      <div class="toast-banner" id="toastBanner" aria-live="assertive"></div>
+      <div class="confetti-layer" id="confettiLayer"></div>
+    </main>
+
+    <!-- BAR KONTROL BAWAH (OTOMATIS MENDENGARKAN + BANTUAN GURU) -->
+    <footer class="bottom-bar">
+      <button class="mic-status-pill listening" id="micStatusBtn" type="button" title="Mikrofon otomatis aktif. Ketuk jika mikrofon sempat berhenti.">
+        <span id="micIcon">🎤</span>
+        <div class="wave-bars" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <span id="micLabel">Mendengarkan... Langsung Baca!</span>
+      </button>
+
+      <div class="teacher-tools">
+        <button class="btn-helper" id="btnReplayAudio" type="button">🔄 Ulangi Suara</button>
+        <button class="btn-helper manual" id="btnManualNext" type="button">Lanjut Manual ➔</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ============================================================
+       LAYAR MULAI (4 KATEGORI BANK SOAL)
+       ============================================================ -->
+  <div class="overlay" id="startOverlay">
+    <div class="modal-card">
+      <div style="font-size: 3.1rem; margin-bottom: 4px;">🐒🌴🍌</div>
+      <h1 class="modal-title">Petualangan Monyet:<br/>Belajar Membaca Kata</h1>
+      <p class="modal-sub">Bantu Monyet berayun dari satu tali ke tali berikutnya menuju Pohon Pisang Emas!</p>
+
+      <div class="category-box">
+        <span class="category-label">📚 Pilih Kategori Bank Soal (96 Kata Variatif):</span>
+        <div class="cat-grid" id="categoryGrid">
+          <button type="button" class="cat-btn active" data-cat="all">
+            🌟 Semua Kata (Acak)
+            <small>96 kata lengkap</small>
+          </button>
+          <button type="button" class="cat-btn" data-cat="dasar">
+            📖 Kata Dasar TK
+            <small>32 kata • BU-KU, BO-LA, SA-PI...</small>
+          </button>
+          <button type="button" class="cat-btn" data-cat="ng">
+            🔔 Fokus "NG"
+            <small>34 kata • PI-SANG, BU-NGA, KU-CING...</small>
+          </button>
+          <button type="button" class="cat-btn" data-cat="ny_mix">
+            🐒 Fokus "NY, SY, KH"
+            <small>30 kata • MO-NYET, PE-NYU, A-SYIK...</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="guide-box">
+        🎤 <strong>Mikrofon Otomatis Aktif!</strong> Anak <strong>tidak perlu menekan tombol</strong>—langsung ucapkan kata yang muncul di papan kayu. Klik <strong>Izinkan (Allow)</strong> saat browser meminta akses mikrofon.
+      </div>
+
+      <button type="button" class="btn-primary" id="btnStart">▶ MULAI BERMAIN</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       LAYAR AKHIR (TANPA TIMER)
+       ============================================================ -->
+  <div class="overlay hidden" id="endOverlay">
+    <div class="modal-card">
+      <div style="font-size: 3.3rem;" id="endEmoji">🏆🍌🐒</div>
+      <h2 class="modal-title" id="endTitle">Hebat Sekali!</h2>
+      <p class="modal-sub" id="endSubtitle">Monyet berhasil sampai ke Pohon Pisang Emas!</p>
+      <div class="stars-row" id="endStars">⭐⭐⭐</div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-val" id="statScore">100</div>
+          <div class="stat-lbl">Total Skor</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statAccuracy">100%</div>
+          <div class="stat-lbl">Akurasi</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statWords">10/10</div>
+          <div class="stat-lbl">Kata Benar</div>
+        </div>
+      </div>
+
+      <div class="end-actions">
+        <button type="button" class="btn-secondary" id="btnChangeCategory">📚 Ganti Kategori</button>
+        <button type="button" class="btn-primary" id="btnPlayAgain">🔄 MAIN LAGI</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      /* ============================================================
+         1. BANK SOAL 96 KATA VARIATIF TK (4 KATEGORI)
+         ============================================================ */
+      const WORD_BANK = {
+        // 32 Kata Dasar TK
+        dasar: [
+          "BU-KU", "BU-AH", "BO-LA", "ME-JA", "RO-TI", "KU-DA", "SA-PI", "BA-JU",
+          "TO-PI", "RU-SA", "MA-TA", "KA-KI", "GI-GI", "DA-DA", "PI-PI", "PA-LU",
+          "LA-BU", "DA-DU", "SO-FA", "KO-PI", "SU-SU", "MA-DU", "TA-HU", "GU-LA",
+          "PA-DI", "BA-TU", "KA-YU", "DA-UN", "A-YAM", "I-KAN", "GA-JAH", "RU-MAH"
+        ],
+        // 34 Kata Fokus "NG"
+        ng: [
+          "KA-CANG", "PI-SANG", "BU-NGA", "SI-NGA", "KU-CING", "BIN-TANG", "GU-NUNG", "DO-NGENG",
+          "MANG-GA", "NANG-KA", "JA-GUNG", "BU-RUNG", "TE-RONG", "PA-YUNG", "KA-LUNG", "GE-LANG",
+          "PI-RING", "PA-TUNG", "TE-PUNG", "U-DANG", "CA-PUNG", "KU-NING", "BA-WANG", "GE-DUNG",
+          "BE-NANG", "RE-NANG", "SE-NANG", "TE-RANG", "WA-YANG", "SA-RANG", "LA-YANG", "GO-RENG",
+          "TO-LONG", "KO-SONG"
+        ],
+        // 30 Kata Fokus "NY, SY, KH" & Campuran
+        ny_mix: [
+          "MO-NYET", "PE-NYU", "NYA-MUK", "NYA-NYI", "KE-NYANG", "SE-NYUM", "TA-NYA", "PU-NYA",
+          "BU-NYI", "SU-NYI", "MI-NYAK", "BA-NYAK", "KU-NYIT", "HA-NYA", "A-SYIK", "SYU-KUR",
+          "SYA-RAT", "A-KHIR", "KHU-SUS", "KHA-YAL", "PAN-TAI", "KER-BAU", "HA-RI-MAU", "SE-MANG-KA",
+          "PE-LA-NGI", "KE-LIN-CI", "JE-RA-PAH", "SE-PA-TU", "KE-ME-JA", "ME-NYA-PU"
+        ]
+      };
+
+      const TOTAL_QUESTIONS = 10;
+      const VINE_SPACING = 220;
+      const START_X = 140;
+
+      /* ============================================================
+         2. STATE PERMAINAN
+         ============================================================ */
+      let selectedCategory = "all";
+      let sessionWords = [];
+      let currentIndex = 0;
+      let lives = 3;
+      let score = 0;
+      let totalAttempts = 0;
+      let correctCount = 0;
+      let isMuted = false;
+      let isGameActive = false;
+      let isAnimating = false;
+      let isSpeakingTTS = false;
+      let recognition = null;
+      let isRecognizing = false;
+      let micBlocked = false;
+      let restartTimer = null;
+      let wrongDebounceTimer = null;
+      let swingRafId = null;
+      let bubbleTimer = null;
+
+      /* ============================================================
+         3. REFERENSI ELEMEN DOM
+         ============================================================ */
+      const livesBox = document.getElementById("livesBox");
+      const progressPill = document.getElementById("progressPill");
+      const scorePill = document.getElementById("scorePill");
+      const btnMute = document.getElementById("btnMute");
+      const wordBoard = document.getElementById("wordBoard");
+      const wordText = document.getElementById("wordText");
+      const btnSpeakWord = document.getElementById("btnSpeakWord");
+      const transcriptChip = document.getElementById("transcriptChip");
+      const worldViewport = document.getElementById("worldViewport");
+      const worldTrack = document.getElementById("worldTrack");
+      const worldSvg = document.getElementById("worldSvg");
+      const monkeyEl = document.getElementById("monkeyEl");
+      const monkeyBubble = document.getElementById("monkeyBubble");
+      const monkeyPivot = document.getElementById("monkeyPivot");
+      const armLeftGroup = document.getElementById("armLeftGroup");
+      const armRightGroup = document.getElementById("armRightGroup");
+      const legLeftGroup = document.getElementById("legLeftGroup");
+      const legRightGroup = document.getElementById("legRightGroup");
+      const tailGroup = document.getElementById("tailGroup");
+      const monkeyMouthHappy = document.getElementById("monkeyMouthHappy");
+      const monkeyMouthShock = document.getElementById("monkeyMouthShock");
+      const toastBanner = document.getElementById("toastBanner");
+      const confettiLayer = document.getElementById("confettiLayer");
+      const micStatusBtn = document.getElementById("micStatusBtn");
+      const micIcon = document.getElementById("micIcon");
+      const micLabel = document.getElementById("micLabel");
+      const btnReplayAudio = document.getElementById("btnReplayAudio");
+      const btnManualNext = document.getElementById("btnManualNext");
+      const startOverlay = document.getElementById("startOverlay");
+      const endOverlay = document.getElementById("endOverlay");
+      const btnStart = document.getElementById("btnStart");
+      const btnPlayAgain = document.getElementById("btnPlayAgain");
+      const btnChangeCategory = document.getElementById("btnChangeCategory");
+      const categoryGrid = document.getElementById("categoryGrid");
+
+      /* ============================================================
+         4. SISTEM AUDIO SINTETIS (WEB AUDIO API MURNI)
+            Mencakup suara monyet "Uu-aa-uu-aa!", whoosh, chime, slip, menang
+         ============================================================ */
+      let audioCtx = null;
+
+      function ensureAudioCtx() {
+        try {
+          if (!audioCtx) {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (AC) audioCtx = new AC();
+          }
+          if (audioCtx && audioCtx.state === "suspended") {
+            audioCtx.resume().catch(() => {});
+          }
+        } catch (_) {}
+      }
+
+      // Menampilkan balon teks lucu saat monyet bersuara
+      function showMonkeyBubble(text = "Uu-aa-uu-aa! 🍌", duration = 950) {
+        clearTimeout(bubbleTimer);
+        monkeyBubble.textContent = text;
+        monkeyBubble.classList.add("show");
+        bubbleTimer = setTimeout(() => {
+          monkeyBubble.classList.remove("show");
+        }, duration);
+      }
+
+      /**
+       * Sintesis suara monyet ceria "uu-aa-uu-aa!" berbasis Web Audio API
+       * menggunakan 2 filter formant bandpass (vokal 'uu' -> 'aa').
+       */
+      function playMonkeySound() {
+        if (isMuted) return;
+        ensureAudioCtx();
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+        const syllables = [
+          { t: 0.00, dur: 0.12, f0: 310, fPeak: 470, f1: 400, fm1Start: 360, fm1End: 480, fm2: 950,  gain: 0.24 }, // uu
+          { t: 0.13, dur: 0.15, f0: 500, fPeak: 800, f1: 540, fm1Start: 780, fm1End: 1080, fm2: 1750, gain: 0.28 }, // aa
+          { t: 0.30, dur: 0.12, f0: 330, fPeak: 500, f1: 420, fm1Start: 380, fm1End: 500, fm2: 980,  gain: 0.25 }, // uu
+          { t: 0.43, dur: 0.19, f0: 520, fPeak: 870, f1: 560, fm1Start: 800, fm1End: 1120, fm2: 1850, gain: 0.30 }  // aa!
+        ];
+
+        syllables.forEach((s) => {
+          const t0 = now + s.t;
+          const tMid = t0 + s.dur * 0.48;
+          const tEnd = t0 + s.dur;
+
+          const oscSaw = audioCtx.createOscillator();
+          const oscTri = audioCtx.createOscillator();
+          oscSaw.type = "sawtooth";
+          oscTri.type = "triangle";
+
+          oscSaw.frequency.setValueAtTime(s.f0, t0);
+          oscSaw.frequency.exponentialRampToValueAtTime(s.fPeak, tMid);
+          oscSaw.frequency.exponentialRampToValueAtTime(s.f1, tEnd);
+
+          oscTri.frequency.setValueAtTime(s.f0, t0);
+          oscTri.frequency.exponentialRampToValueAtTime(s.fPeak, tMid);
+          oscTri.frequency.exponentialRampToValueAtTime(s.f1, tEnd);
+
+          const formant1 = audioCtx.createBiquadFilter();
+          formant1.type = "bandpass";
+          formant1.Q.value = 3.2;
+          formant1.frequency.setValueAtTime(s.fm1Start, t0);
+          formant1.frequency.exponentialRampToValueAtTime(s.fm1End, tEnd);
+
+          const formant2 = audioCtx.createBiquadFilter();
+          formant2.type = "bandpass";
+          formant2.Q.value = 4.0;
+          formant2.frequency.setValueAtTime(s.fm2, t0);
+
+          const f2Gain = audioCtx.createGain();
+          f2Gain.gain.value = 0.4;
+
+          const amp = audioCtx.createGain();
+          amp.gain.setValueAtTime(0.001, t0);
+          amp.gain.linearRampToValueAtTime(s.gain, t0 + 0.025);
+          amp.gain.setValueAtTime(s.gain * 0.88, tMid);
+          amp.gain.exponentialRampToValueAtTime(0.001, tEnd);
+
+          oscSaw.connect(formant1);
+          oscTri.connect(formant1);
+          oscSaw.connect(formant2);
+
+          formant1.connect(amp);
+          formant2.connect(f2Gain);
+          f2Gain.connect(amp);
+          amp.connect(audioCtx.destination);
+
+          oscSaw.start(t0);
+          oscTri.start(t0);
+          oscSaw.stop(tEnd + 0.02);
+          oscTri.stop(tEnd + 0.02);
+        });
+      }
+
+      // Efek ayunan tali (whoosh)
+      function playWhoosh() {
+        if (isMuted) return;
+        ensureAudioCtx();
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+        const duration = 0.36;
+        const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+        }
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(280, now);
+        filter.frequency.exponentialRampToValueAtTime(1100, now + duration * 0.55);
+        filter.frequency.exponentialRampToValueAtTime(340, now + duration);
+        filter.Q.value = 1.8;
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.22, now + duration * 0.45);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start(now);
+        noise.stop(now + duration);
+      }
+
+      // Efek chime ceria saat benar
+      function playCorrectChime() {
+        if (isMuted) return;
+        ensureAudioCtx();
+        if (!audioCtx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, i) => {
+          const now = audioCtx.currentTime + i * 0.07;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.18, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.27);
+        });
+      }
+
+      // Efek terpeleset saat salah
+      function playSlipSound() {
+        if (isMuted) return;
+        ensureAudioCtx();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(360, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.38);
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.42);
+      }
+
+      // Melodi kemenangan
+      function playVictoryMelody() {
+        if (isMuted) return;
+        ensureAudioCtx();
+        if (!audioCtx) return;
+        const melody = [
+          [523.25, 0], [659.25, 0.12], [783.99, 0.24],
+          [1046.5, 0.36], [783.99, 0.52], [1046.5, 0.66]
+        ];
+        melody.forEach(([freq, delay]) => {
+          const now = audioCtx.currentTime + delay;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.22, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.34);
+        });
+      }
+
+      // Contoh pelafalan kata menggunakan SpeechSynthesis id-ID
+      function speakCurrentWord() {
+        if (!("speechSynthesis" in window) || !sessionWords[currentIndex]) return;
+        const plainWord = sessionWords[currentIndex].replace(/-/g, "").toLowerCase();
+        try {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(plainWord);
+          utter.lang = "id-ID";
+          utter.rate = 0.85;
+          utter.pitch = 1.05;
+          isSpeakingTTS = true;
+          pauseListeningTemporarily();
+          utter.onend = () => {
+            isSpeakingTTS = false;
+            if (isGameActive && !isAnimating) scheduleAutoListen(300);
+          };
+          utter.onerror = () => {
+            isSpeakingTTS = false;
+            if (isGameActive && !isAnimating) scheduleAutoListen(300);
+          };
+          window.speechSynthesis.speak(utter);
+        } catch (_) {
+          isSpeakingTTS = false;
+        }
+      }
+
+      /* ============================================================
+         5. RENDER DUNIA HUTAN, 11 TALI SULUR & POHON PISANG EMAS (SVG)
+         ============================================================ */
+      function getVineX(idx) {
+        return START_X + idx * VINE_SPACING;
+      }
+
+      function getStageHeight() {
+        return Math.max(360, worldViewport.clientHeight || 500);
+      }
+
+      function getMonkeyGripY() {
+        return Math.round(getStageHeight() * 0.44);
+      }
+
+      function buildWorldSVG() {
+        const h = getStageHeight();
+        const finishX = getVineX(TOTAL_QUESTIONS) + 170;
+        const totalWidth = finishX + 360;
+
+        worldTrack.style.width = totalWidth + "px";
+        worldSvg.setAttribute("width", totalWidth);
+        worldSvg.setAttribute("height", h);
+        worldSvg.setAttribute("viewBox", `0 0 ${totalWidth} ${h}`);
+
+        const branchY = Math.round(h * 0.24);
+        const groundY = Math.round(h * 0.78);
+        const vineBottomY = Math.round(h * 0.74);
+
+        let svg = "";
+
+        // Bukit belakang hijau cerah
+        svg += `<path d="M0,${groundY} `;
+        for (let x = 0; x <= totalWidth; x += 260) {
+          svg += `Q${x + 130},${groundY - 95} ${x + 260},${groundY} `;
+        }
+        svg += `L${totalWidth},${h} L0,${h} Z" fill="#4ade80" opacity="0.65"/>`;
+
+        // Bukit depan hijau tropis
+        svg += `<path d="M0,${groundY + 20} `;
+        for (let x = 0; x <= totalWidth; x += 320) {
+          svg += `Q${x + 160},${groundY - 45} ${x + 320},${groundY + 20} `;
+        }
+        svg += `L${totalWidth},${h} L0,${h} Z" fill="#22c55e"/>`;
+
+        // Pepohonan latar berderet
+        for (let x = 80; x < finishX; x += 270) {
+          const treeTop = groundY - 125;
+          svg += `
+            <g opacity="0.82">
+              <rect x="${x - 13}" y="${treeTop + 45}" width="26" height="${h - treeTop}" rx="8" fill="#15803d" opacity="0.5"/>
+              <circle cx="${x}" cy="${treeTop + 30}" r="48" fill="#16a34a"/>
+              <circle cx="${x - 32}" cy="${treeTop + 50}" r="32" fill="#22c55e"/>
+              <circle cx="${x + 32}" cy="${treeTop + 50}" r="32" fill="#22c55e"/>
+            </g>
+          `;
+        }
+
+        // Dahan pohon horizontal tempat 11 tali sulur menggantung
+        svg += `
+          <rect x="0" y="${branchY - 10}" width="${totalWidth}" height="20" fill="#78350f"/>
+          <rect x="0" y="${branchY - 10}" width="${totalWidth}" height="6" fill="#92400e"/>
+        `;
+
+        // 11 Tali Sulur (0 = Start ★, 1..10 = Kata 1..10)
+        for (let i = 0; i <= TOTAL_QUESTIONS; i++) {
+          const vx = getVineX(i);
+          const badgeText = i === 0 ? "★" : String(i);
+          const badgeFill = i === 0 ? "#fef08a" : "#ffffff";
+          const badgeStroke = i === 0 ? "#ca8a04" : "#15803d";
+
+          svg += `
+            <g class="vine-group" id="vine-${i}">
+              <path d="M${vx},${branchY} Q${vx + 8},${(branchY + vineBottomY) / 2} ${vx},${vineBottomY}"
+                    fill="none" stroke="#15803d" stroke-width="9" stroke-linecap="round"/>
+              <path d="M${vx},${branchY} Q${vx + 8},${(branchY + vineBottomY) / 2} ${vx},${vineBottomY}"
+                    fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10"/>
+              <ellipse cx="${vx - 11}" cy="${branchY + 55}" rx="12" ry="6" transform="rotate(-25 ${vx - 11} ${branchY + 55})" fill="#22c55e" stroke="#14532d" stroke-width="2"/>
+              <ellipse cx="${vx + 13}" cy="${branchY + 125}" rx="12" ry="6" transform="rotate(22 ${vx + 13} ${branchY + 125})" fill="#22c55e" stroke="#14532d" stroke-width="2"/>
+              <ellipse cx="${vx - 10}" cy="${vineBottomY - 35}" rx="11" ry="5.5" transform="rotate(-20 ${vx - 10} ${vineBottomY - 35})" fill="#22c55e" stroke="#14532d" stroke-width="2"/>
+              <circle id="vine-badge-${i}" cx="${vx}" cy="${branchY + 32}" r="16" fill="${badgeFill}" stroke="${badgeStroke}" stroke-width="3"/>
+              <text x="${vx}" y="${branchY + 37}" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="14" font-weight="700" fill="#14532d">${badgeText}</text>
+            </g>
+          `;
+        }
+
+        // Pohon Pisang Emas di Garis Finis
+        const px = finishX;
+        const py = groundY + 18;
+        svg += `
+          <g id="bananaTree">
+            <path d="M${px - 16},${py} Q${px - 10},${py - 120} ${px - 6},${py - 210} L${px + 12},${py - 210} Q${px + 14},${py - 120} ${px + 20},${py} Z" fill="#84cc16" stroke="#365314" stroke-width="3"/>
+            <path d="M${px},${py - 205} Q${px - 85},${py - 240} ${px - 115},${py - 175} Q${px - 55},${py - 175} ${px},${py - 195} Z" fill="#16a34a" stroke="#14532d" stroke-width="3"/>
+            <path d="M${px + 6},${py - 205} Q${px + 95},${py - 245} ${px + 122},${py - 175} Q${px + 60},${py - 175} ${px + 6},${py - 195} Z" fill="#22c55e" stroke="#14532d" stroke-width="3"/>
+            <path d="M${px + 2},${py - 210} Q${px - 45},${py - 295} ${px - 90},${py - 255} Q${px - 35},${py - 230} ${px + 2},${py - 202} Z" fill="#22c55e" stroke="#14532d" stroke-width="3"/>
+            <path d="M${px + 4},${py - 210} Q${px + 55},${py - 295} ${px + 98},${py - 250} Q${px + 42},${py - 230} ${px + 4},${py - 202} Z" fill="#15803d" stroke="#14532d" stroke-width="3"/>
+            <g transform="translate(${px - 42}, ${py - 176})">
+              <path d="M18,0 C4,14 2,34 18,46 C12,32 14,16 24,6 Z" fill="#facc15" stroke="#a16207" stroke-width="2.5"/>
+              <path d="M28,2 C14,16 12,38 28,50 C22,36 24,18 34,8 Z" fill="#fde047" stroke="#a16207" stroke-width="2.5"/>
+              <path d="M38,0 C24,14 22,36 38,48 C32,34 34,16 44,6 Z" fill="#facc15" stroke="#a16207" stroke-width="2.5"/>
+            </g>
+            <rect x="${px - 48}" y="${py - 68}" width="102" height="32" rx="10" fill="#fef08a" stroke="#a16207" stroke-width="3"/>
+            <text x="${px + 3}" y="${py - 47}" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="16" font-weight="700" fill="#78350f">🏆 FINIS</text>
+          </g>
+        `;
+
+        worldSvg.innerHTML = svg;
+        if (!isAnimating) {
+          snapMonkeyToVine(currentIndex);
+        }
+        centerCameraOn(currentIndex);
+      }
+
+      /* ============================================================
+         6. ANIMASI 4 FASE BERGELANTUNGAN NYATA (BRACHIATION)
+         ============================================================ */
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function easeInOut(t) {
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      }
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      function resetMonkeyLimbsToIdle() {
+        monkeyPivot.style.transform = "";
+        armLeftGroup.style.transform = "rotate(0deg)";
+        armRightGroup.style.transform = "";
+        legLeftGroup.style.transform = "";
+        legRightGroup.style.transform = "";
+        tailGroup.style.transform = "";
+      }
+
+      function snapMonkeyToVine(vineIdx) {
+        if (swingRafId) {
+          cancelAnimationFrame(swingRafId);
+          swingRafId = null;
+        }
+        const targetX = vineIdx > TOTAL_QUESTIONS
+          ? getVineX(TOTAL_QUESTIONS) + 125
+          : getVineX(vineIdx);
+        const targetY = getMonkeyGripY();
+
+        monkeyEl.style.left = targetX + "px";
+        monkeyEl.style.top = targetY + "px";
+        resetMonkeyLimbsToIdle();
+        monkeyEl.classList.remove("slipping", "celebrate");
+        monkeyEl.classList.add("idle");
+      }
+
+      /**
+       * Animasi 4 fase menggunakan requestAnimationFrame:
+       * (1) Ancang-ancang: tubuh & tangan kanan mengayun ke belakang, tangan kiri pegang tali.
+       * (2) Meluncur & Meraih: tubuh meluncur parabola, tangan kiri lepas & terayun ke belakang, tangan kanan meraih tinggi ke depan.
+       * (3) Menangkap Tali: tangan kanan menangkap tali baru disertai ayunan elastis (catch-vine) & follow-through.
+       * (4) Ganti Pegangan: tangan kiri naik menggenggam tali, tangan kanan turun bebas ke bawah.
+       */
+      function animateMonkeySwing(fromIdx, toIdx, onComplete) {
+        if (swingRafId) cancelAnimationFrame(swingRafId);
+
+        const startX = getVineX(fromIdx);
+        const endX = toIdx > TOTAL_QUESTIONS
+          ? getVineX(TOTAL_QUESTIONS) + 125
+          : getVineX(toIdx);
+        const baseY = getMonkeyGripY();
+
+        monkeyEl.classList.remove("idle", "slipping", "celebrate");
+
+        const fromVineEl = document.getElementById(`vine-${fromIdx}`);
+        const toVineEl = document.getElementById(`vine-${toIdx}`);
+        let caughtTriggered = false;
+
+        if (fromVineEl) {
+          fromVineEl.classList.remove("catch-vine", "shake-vine");
+          void fromVineEl.offsetWidth;
+          fromVineEl.classList.add("catch-vine");
+        }
+
+        const duration = 880;
+        const startTime = performance.now();
+
+        function frame(now) {
+          const rawT = Math.min(1, (now - startTime) / duration);
+
+          let curX = startX;
+          let curY = baseY;
+          let bodyAngle = 0;
+          let leftArmAngle = 0;
+          let rightArmAngle = 118;
+          let legAngle = 0;
+          let tailAngle = 0;
+
+          if (rawT < 0.22) {
+            // Fase 1: Ancang-ancang
+            const p = easeInOut(rawT / 0.22);
+            curX = startX - Math.sin(p * Math.PI * 0.5) * 8;
+            curY = baseY + p * 6;
+            bodyAngle = lerp(-4, 20, p);
+            leftArmAngle = lerp(0, -10, p);
+            rightArmAngle = lerp(118, 138, p);
+            legAngle = lerp(0, 22, p);
+            tailAngle = lerp(0, -18, p);
+          } else if (rawT < 0.58) {
+            // Fase 2: Meluncur & Meraih
+            const p = (rawT - 0.22) / 0.36;
+            const ep = easeInOut(p);
+            curX = lerp(startX - 8, endX, ep);
+            curY = baseY + 6 * (1 - p) + Math.sin(p * Math.PI) * 16 - Math.sin(Math.pow(p, 1.4) * Math.PI) * 26;
+
+            bodyAngle = lerp(20, -26, ep);
+            leftArmAngle = lerp(-10, -118, easeOutCubic(p));
+            rightArmAngle = lerp(138, -14, easeOutCubic(p));
+            legAngle = lerp(22, -26, ep);
+            tailAngle = lerp(-18, 28, ep);
+          } else if (rawT < 0.78) {
+            // Fase 3: Menangkap Tali Baru + Follow-through
+            if (!caughtTriggered) {
+              caughtTriggered = true;
+              if (toVineEl) {
+                toVineEl.classList.remove("catch-vine", "shake-vine");
+                void toVineEl.offsetWidth;
+                toVineEl.classList.add("catch-vine");
+              }
+            }
+            const p = easeOutCubic((rawT - 0.58) / 0.20);
+            curX = endX + Math.sin(p * Math.PI) * 7;
+            curY = baseY + Math.sin(p * Math.PI) * 4;
+
+            bodyAngle = lerp(-26, 8, p);
+            rightArmAngle = lerp(-14, 0, p);
+            leftArmAngle = lerp(-118, -68, p);
+            legAngle = lerp(-26, 12, p);
+            tailAngle = lerp(28, -12, p);
+          } else {
+            // Fase 4: Ganti Pegangan (tangan kiri naik pegang tali, kanan turun bebas)
+            const p = easeInOut((rawT - 0.78) / 0.22);
+            curX = endX;
+            curY = baseY;
+
+            bodyAngle = lerp(8, -5.5, p);
+            leftArmAngle = lerp(-68, 0, p);
+            rightArmAngle = lerp(0, 126, p);
+            legAngle = lerp(12, -5, p);
+            tailAngle = lerp(-12, -8, p);
+          }
+
+          monkeyEl.style.left = curX + "px";
+          monkeyEl.style.top = curY + "px";
+          monkeyPivot.style.transform = `rotate(${bodyAngle.toFixed(2)}deg)`;
+          armLeftGroup.style.transform = `rotate(${leftArmAngle.toFixed(2)}deg)`;
+          armRightGroup.style.transform = `rotate(${rightArmAngle.toFixed(2)}deg)`;
+          legLeftGroup.style.transform = `rotate(${legAngle.toFixed(2)}deg)`;
+          legRightGroup.style.transform = `rotate(${(legAngle * 0.85).toFixed(2)}deg)`;
+          tailGroup.style.transform = `rotate(${tailAngle.toFixed(2)}deg)`;
+
+          if (rawT < 1) {
+            swingRafId = requestAnimationFrame(frame);
+          } else {
+            swingRafId = null;
+            resetMonkeyLimbsToIdle();
+            if (toIdx <= TOTAL_QUESTIONS) {
+              monkeyEl.classList.add("idle");
+            }
+            if (typeof onComplete === "function") onComplete();
+          }
+        }
+
+        swingRafId = requestAnimationFrame(frame);
+      }
+
+      function centerCameraOn(vineIdx) {
+        const vw = worldViewport.clientWidth || window.innerWidth;
+        const targetX = vineIdx > TOTAL_QUESTIONS
+          ? getVineX(TOTAL_QUESTIONS) + 130
+          : getVineX(vineIdx);
+        const desiredOffset = Math.max(0, targetX - vw * 0.28);
+        const maxOffset = Math.max(0, worldTrack.scrollWidth - vw);
+        const clamped = Math.min(desiredOffset, maxOffset);
+        worldTrack.style.transform = `translateX(${-clamped}px)`;
+      }
+
+      function highlightCurrentVine() {
+        for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+          const badge = document.getElementById(`vine-badge-${i}`);
+          if (!badge) continue;
+          if (i <= currentIndex) {
+            badge.setAttribute("fill", "#86efac");
+            badge.setAttribute("stroke", "#15803d");
+          } else if (i === currentIndex + 1) {
+            badge.setAttribute("fill", "#facc15");
+            badge.setAttribute("stroke", "#b45309");
+          } else {
+            badge.setAttribute("fill", "#ffffff");
+            badge.setAttribute("stroke", "#15803d");
+          }
+        }
+      }
+
+      /* ============================================================
+         7. LOGIKA KATA, SUKU KATA & PENCOCOKAN SUARA RAMAH ANAK TK
+         ============================================================ */
+      function shuffle(arr) {
+        const copy = [...arr];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function pickSessionWords() {
+        let pool = [];
+        if (selectedCategory === "all") {
+          pool = [...WORD_BANK.dasar, ...WORD_BANK.ng, ...WORD_BANK.ny_mix];
+        } else {
+          pool = [...(WORD_BANK[selectedCategory] || WORD_BANK.dasar)];
+        }
+        return shuffle(pool).slice(0, TOTAL_QUESTIONS);
+      }
+
+      function renderCurrentWord() {
+        const raw = sessionWords[currentIndex] || "";
+        const syllables = raw.split("-");
+        wordText.innerHTML = syllables
+          .map((s, idx) => `<span class="syl-${idx % 4}">${s}</span>`)
+          .join(`<span class="syl-dash">-</span>`);
+
+        wordBoard.classList.remove("pop");
+        void wordBoard.offsetWidth;
+        wordBoard.classList.add("pop");
+
+        progressPill.textContent = `Kata ${currentIndex + 1}/${TOTAL_QUESTIONS}`;
+        transcriptChip.className = "transcript-chip";
+        transcriptChip.textContent = "🎤 Terdengar: ...";
+        highlightCurrentVine();
+      }
+
+      function normalizeText(str) {
+        return (str || "")
+          .toLowerCase()
+          .replace(/[^a-z\s]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function levenshtein(a, b) {
+        const m = a.length, n = b.length;
+        const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+        for (let i = 0; i <= m; i++) dp[i][0] = i;
+        for (let j = 0; j <= n; j++) dp[0][j] = j;
+        for (let i = 1; i <= m; i++) {
+          for (let j = 1; j <= n; j++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+            dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+          }
+        }
+        return dp[m][n];
+      }
+
+      function isWordMatch(transcript, targetHyphenated) {
+        const target = targetHyphenated.replace(/-/g, "").toLowerCase();
+        const cleaned = normalizeText(transcript);
+        if (!cleaned) return false;
+
+        const compact = cleaned.replace(/\s+/g, "");
+        if (compact.includes(target)) return true;
+
+        const spokenTokens = cleaned.split(" ");
+        for (const token of spokenTokens) {
+          if (token === target) return true;
+          if (target.length >= 5 && levenshtein(token, target) <= 1) return true;
+        }
+        return false;
+      }
+
+      /* ============================================================
+         8. PENGENALAN SUARA OTOMATIS (WEB SPEECH API id-ID)
+         ============================================================ */
+      function setMicUI(state, text) {
+        micStatusBtn.classList.remove("listening", "paused", "blocked");
+        if (state === "listening") {
+          micStatusBtn.classList.add("listening");
+          micIcon.textContent = "🎤";
+          micLabel.textContent = text || "Mendengarkan... Langsung Baca!";
+        } else if (state === "paused") {
+          micStatusBtn.classList.add("paused");
+          micIcon.textContent = "⏳";
+          micLabel.textContent = text || "Sebentar ya...";
+        } else {
+          micStatusBtn.classList.add("blocked");
+          micIcon.textContent = "🚫";
+          micLabel.textContent = text || "Mikrofon Tidak Aktif";
+        }
+      }
+
+      function initSpeechRecognition() {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) {
+          micBlocked = true;
+          setMicUI("blocked", "Browser Tidak Dukung Mic");
+          showToast("Browser ini belum mendukung pengenalan suara. Gunakan tombol 'Lanjut Manual ➔'.", "error", 6000);
+          return false;
+        }
+
+        recognition = new SR();
+        recognition.lang = "id-ID";
+        recognition.interimResults = true;
+        recognition.continuous = false;
+        recognition.maxAlternatives = 5;
+
+        recognition.onstart = () => {
+          isRecognizing = true;
+          micBlocked = false;
+          setMicUI("listening", "Mendengarkan... Langsung Baca!");
+        };
+
+        recognition.onresult = (event) => {
+          if (!isGameActive || isAnimating || isSpeakingTTS) return;
+          let combined = "";
+          let isFinal = false;
+
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const res = event.results[i];
+            if (res.isFinal) isFinal = true;
+            combined += res[0].transcript + " ";
+
+            for (let a = 0; a < res.length; a++) {
+              const altText = res[a].transcript;
+              if (isWordMatch(altText, sessionWords[currentIndex])) {
+                transcriptChip.className = "transcript-chip heard-correct";
+                transcriptChip.textContent = `✅ Terdengar: "${altText.trim()}"`;
+                clearTimeout(wrongDebounceTimer);
+                handleCorrectAnswer(false);
+                return;
+              }
+            }
+          }
+
+          const displayStr = combined.trim();
+          if (displayStr) {
+            transcriptChip.className = "transcript-chip";
+            transcriptChip.textContent = `🎤 Terdengar: "${displayStr}"`;
+          }
+
+          if (isFinal && displayStr) {
+            clearTimeout(wrongDebounceTimer);
+            wrongDebounceTimer = setTimeout(() => {
+              if (isGameActive && !isAnimating) {
+                handleWrongAnswer(displayStr);
+              }
+            }, 350);
+          }
+        };
+
+        recognition.onerror = (event) => {
+          isRecognizing = false;
+          if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            micBlocked = true;
+            setMicUI("blocked", "Izin Mikrofon Ditolak");
+            const isLocal = location.protocol === "file:" || location.protocol === "content:";
+            const msg = isLocal
+              ? "File lokal (non-HTTPS) diblokir browser. Buka lewat GitHub Pages/HTTPS untuk mic aktif, atau gunakan 'Lanjut Manual ➔'."
+              : "Izin mikrofon ditolak. Aktifkan izin mikrofon di browser, atau gunakan tombol 'Lanjut Manual ➔'.";
+            showToast(msg, "error", 7500);
+          }
+        };
+
+        recognition.onend = () => {
+          isRecognizing = false;
+          if (isGameActive && !isAnimating && !isSpeakingTTS && !micBlocked) {
+            scheduleAutoListen(280);
+          }
+        };
+
+        return true;
+      }
+
+      function startListeningNow() {
+        if (!isGameActive || isAnimating || isSpeakingTTS || micBlocked) return;
+        if (!recognition && !initSpeechRecognition()) return;
+        if (isRecognizing) return;
+
+        try {
+          recognition.start();
+        } catch (_) {
+          scheduleAutoListen(400);
+        }
+      }
+
+      function scheduleAutoListen(delay = 300) {
+        clearTimeout(restartTimer);
+        if (!isGameActive || isAnimating || isSpeakingTTS || micBlocked) return;
+        restartTimer = setTimeout(() => {
+          startListeningNow();
+        }, delay);
+      }
+
+      function pauseListeningTemporarily() {
+        clearTimeout(restartTimer);
+        clearTimeout(wrongDebounceTimer);
+        if (recognition && isRecognizing) {
+          try {
+            recognition.abort();
+          } catch (_) {}
+        }
+        isRecognizing = false;
+        if (!micBlocked) setMicUI("paused", "Sebentar ya...");
+      }
+
+      /* ============================================================
+         9. PENILAIAN, KONFETI & AKHIR PERMAINAN
+         ============================================================ */
+      let toastTimer = null;
+      function showToast(msg, type = "", duration = 2500) {
+        clearTimeout(toastTimer);
+        toastBanner.textContent = msg;
+        toastBanner.className = `toast-banner show ${type}`;
+        toastTimer = setTimeout(() => {
+          toastBanner.classList.remove("show");
+        }, duration);
+      }
+
+      function spawnConfetti() {
+        const icons = ["⭐", "✨", "🍌", "🎉", "🌟"];
+        const cx = worldViewport.clientWidth * 0.45;
+        const cy = worldViewport.clientHeight * 0.45;
+
+        for (let i = 0; i < 18; i++) {
+          const node = document.createElement("span");
+          node.className = "particle";
+          node.textContent = icons[Math.floor(Math.random() * icons.length)];
+          const angle = (Math.PI * 2 * i) / 18 + Math.random() * 0.3;
+          const dist = 80 + Math.random() * 140;
+          node.style.left = cx + "px";
+          node.style.top = cy + "px";
+          node.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+          node.style.setProperty("--dy", Math.sin(angle) * dist - 40 + "px");
+          node.style.setProperty("--rot", (Math.random() * 360 - 180) + "deg");
+          confettiLayer.appendChild(node);
+          setTimeout(() => node.remove(), 1050);
+        }
+      }
+
+      function updateHUD() {
+        scorePill.textContent = `Skor: ${score}`;
+        const icons = livesBox.querySelectorAll(".life-icon");
+        icons.forEach((icon, idx) => {
+          icon.classList.toggle("lost", idx >= lives);
+        });
+      }
+
+      function handleCorrectAnswer(isManual = false) {
+        if (!isGameActive || isAnimating) return;
+        isAnimating = true;
+        pauseListeningTemporarily();
+
+        totalAttempts++;
+        correctCount++;
+        score += 10;
+        updateHUD();
+
+        const praises = ["Hebat! 🎉", "Pintar sekali! ⭐", "Keren! Monyet berayun! 🐒", "Bagus sekali! 🍌"];
+        showToast(isManual ? "Monyet berayun ke tali berikutnya! 🐒" : praises[Math.floor(Math.random() * praises.length)], "success", 1800);
+
+        playWhoosh();
+        playCorrectChime();
+        setTimeout(() => {
+          playMonkeySound();
+          showMonkeyBubble("Uu-aa-uu-aa! 🍌", 850);
+        }, 120);
+        spawnConfetti();
+
+        const prevIndex = currentIndex;
+        currentIndex++;
+        centerCameraOn(currentIndex);
+        highlightCurrentVine();
+
+        animateMonkeySwing(prevIndex, currentIndex, () => {
+          if (currentIndex >= TOTAL_QUESTIONS) {
+            finishGame(true);
+          } else {
+            isAnimating = false;
+            renderCurrentWord();
+            scheduleAutoListen(320);
+          }
+        });
+      }
+
+      function handleWrongAnswer(spoken) {
+        if (!isGameActive || isAnimating) return;
+        isAnimating = true;
+        pauseListeningTemporarily();
+
+        totalAttempts++;
+        lives = Math.max(0, lives - 1);
+        updateHUD();
+
+        transcriptChip.className = "transcript-chip heard-wrong";
+        transcriptChip.textContent = `❌ Terdengar: "${spoken}"`;
+
+        wordBoard.classList.remove("shake");
+        void wordBoard.offsetWidth;
+        wordBoard.classList.add("shake");
+
+        const currentVine = document.getElementById(`vine-${currentIndex}`);
+        if (currentVine) {
+          currentVine.classList.remove("shake-vine", "catch-vine");
+          void currentVine.offsetWidth;
+          currentVine.classList.add("shake-vine");
+        }
+
+        // Kedua tangan panik memegang tali saat terpeleset
+        monkeyEl.classList.remove("idle", "slipping");
+        armLeftGroup.style.transform = "rotate(0deg)";
+        armRightGroup.style.transform = "rotate(12deg)";
+        monkeyMouthHappy.style.display = "none";
+        monkeyMouthShock.style.display = "block";
+        void monkeyEl.offsetWidth;
+        monkeyEl.classList.add("slipping");
+
+        playSlipSound();
+        showToast("Ups, hampir benar! Coba ucapkan lagi ya! 💪", "error", 2400);
+
+        setTimeout(() => {
+          monkeyEl.classList.remove("slipping");
+          monkeyMouthHappy.style.display = "block";
+          monkeyMouthShock.style.display = "none";
+          resetMonkeyLimbsToIdle();
+          monkeyEl.classList.add("idle");
+
+          if (lives <= 0) {
+            finishGame(false);
+          } else {
+            isAnimating = false;
+            transcriptChip.className = "transcript-chip";
+            transcriptChip.textContent = "🎤 Terdengar: ...";
+            scheduleAutoListen(300);
+          }
+        }, 920);
+      }
+
+      function finishGame(won) {
+        isGameActive = false;
+        isAnimating = false;
+        pauseListeningTemporarily();
+
+        const accuracy = totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0;
+
+        if (won) {
+          centerCameraOn(TOTAL_QUESTIONS + 1);
+          animateMonkeySwing(TOTAL_QUESTIONS, TOTAL_QUESTIONS + 1, () => {
+            monkeyEl.classList.remove("idle");
+            monkeyEl.classList.add("celebrate");
+            showMonkeyBubble("Yeeey! Uu-aa! 🍌🏆", 1600);
+          });
+          playVictoryMelody();
+          setTimeout(() => playMonkeySound(), 400);
+          spawnConfetti();
+          setTimeout(spawnConfetti, 450);
+
+          document.getElementById("endEmoji").textContent = "🏆🍌🐒";
+          document.getElementById("endTitle").textContent = "Hebat Sekali!";
+          document.getElementById("endSubtitle").textContent = "Monyet berhasil sampai ke Pohon Pisang Emas!";
+        } else {
+          document.getElementById("endEmoji").textContent = "🐒💪🌟";
+          document.getElementById("endTitle").textContent = "Bagus, Ayo Coba Lagi!";
+          document.getElementById("endSubtitle").textContent = "Kamu sudah berusaha dengan sangat baik!";
+        }
+
+        let stars = "⭐";
+        if (won && lives === 3) stars = "⭐⭐⭐";
+        else if (won || correctCount >= 6) stars = "⭐⭐";
+
+        document.getElementById("endStars").textContent = stars;
+        document.getElementById("statScore").textContent = score;
+        document.getElementById("statAccuracy").textContent = accuracy + "%";
+        document.getElementById("statWords").textContent = `${correctCount}/${TOTAL_QUESTIONS}`;
+
+        setTimeout(() => {
+          endOverlay.classList.remove("hidden");
+        }, won ? 1200 : 350);
+      }
+
+      function startNewGame() {
+        ensureAudioCtx();
+        playMonkeySound();
+
+        sessionWords = pickSessionWords();
+        currentIndex = 0;
+        lives = 3;
+        score = 0;
+        totalAttempts = 0;
+        correctCount = 0;
+        isGameActive = true;
+        isAnimating = false;
+        micBlocked = false;
+
+        monkeyMouthHappy.style.display = "block";
+        monkeyMouthShock.style.display = "none";
+
+        startOverlay.classList.add("hidden");
+        endOverlay.classList.add("hidden");
+
+        updateHUD();
+        buildWorldSVG();
+        snapMonkeyToVine(0);
+        renderCurrentWord();
+        showMonkeyBubble("Ayo baca! Uu-aa!", 1100);
+
+        if (!recognition) initSpeechRecognition();
+        scheduleAutoListen(950);
+      }
+
+      /* ============================================================
+         10. EVENT LISTENERS
+         ============================================================ */
+      categoryGrid.addEventListener("click", (e) => {
+        const btn = e.target.closest(".cat-btn");
+        if (!btn) return;
+        categoryGrid.querySelectorAll(".cat-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedCategory = btn.dataset.cat;
+      });
+
+      btnStart.addEventListener("click", startNewGame);
+      btnPlayAgain.addEventListener("click", startNewGame);
+
+      btnChangeCategory.addEventListener("click", () => {
+        endOverlay.classList.add("hidden");
+        startOverlay.classList.remove("hidden");
+      });
+
+      btnMute.addEventListener("click", () => {
+        isMuted = !isMuted;
+        btnMute.textContent = isMuted ? "🔇" : "🔊";
+      });
+
+      btnSpeakWord.addEventListener("click", speakCurrentWord);
+      btnReplayAudio.addEventListener("click", speakCurrentWord);
+
+      btnManualNext.addEventListener("click", () => {
+        if (isGameActive && !isAnimating) {
+          handleCorrectAnswer(true);
+        }
+      });
+
+      micStatusBtn.addEventListener("click", () => {
+        if (!isGameActive) return;
+        micBlocked = false;
+        startListeningNow();
+      });
+
+      // Sentuh karakter monyet untuk mendengar suara "Uu-aa-uu-aa!"
+      monkeyEl.addEventListener("click", () => {
+        playMonkeySound();
+        showMonkeyBubble("Uu-aa-uu-aa! 🐵", 900);
+      });
+
+      monkeyEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          playMonkeySound();
+          showMonkeyBubble("Uu-aa-uu-aa! 🐵", 900);
+        }
+      });
+
+      window.addEventListener("resize", () => {
+        buildWorldSVG();
+      });
+
+      // Render awal latar hutan di belakang layar mulai
+      buildWorldSVG();
+    })();
+  </script>
+</body>
+</html>
